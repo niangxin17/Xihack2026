@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>与你的孩子分数情况相接近的院校推荐</title>
+  <style>
+    :root {
+      --bg: #f7f3ec;
+      --card: #ffffff;
+      --text: #10233d;
+      --muted: #6b7280;
+      --primary: #b94f38;
+      --primary-light: #fff7f2;
+      --green: #059669;
+      --border: #ede8e0;
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding-bottom: 100px;
+    }
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(247, 243, 236, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header h1 { font-size: 16px; margin: 0; font-weight: 700; }
+    .back-link {
+      font-size: 14px;
+      color: var(--muted);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .container { padding: 16px; max-width: 720px; margin: 0 auto; }
+    .summary-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: 0 8px 24px rgba(16, 35, 61, 0.06);
+      margin-bottom: 16px;
+    }
+    .summary-card h2 { font-size: 18px; margin: 0 0 12px; }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .summary-item { background: var(--bg); border-radius: 12px; padding: 12px; text-align: center; }
+    .summary-item .label { font-size: 12px; color: var(--muted); }
+    .summary-item .value { font-size: 18px; font-weight: 800; margin-top: 2px; }
+    .summary-item .value.score { color: var(--primary); }
+    .rule-note {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .rule-note .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+    .disclaimer {
+      margin-bottom: 16px;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #8a5a00;
+      background: #fff8e6;
+      border: 1px solid #f3e2b3;
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+    }
+    .disclaimer .dot { width: 6px; height: 6px; border-radius: 50%; background: #e0a500; margin-top: 6px; flex: none; }
+
+    .school-list { display: flex; flex-direction: column; gap: 10px; }
+    .school-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: 0 4px 16px rgba(16, 35, 61, 0.04);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .school-info { flex: 1; min-width: 0; }
+    .school-name { font-size: 15px; font-weight: 700; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .school-meta { font-size: 12px; color: var(--muted); margin-top: 4px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .school-score { text-align: right; }
+    .ref-score { font-size: 22px; font-weight: 800; color: var(--primary); }
+    .ref-score.negative { color: var(--green); }
+    .gap-badge {
+      display: inline-block;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-top: 4px;
+    }
+    .gap-badge.in { background: #e5f0ee; color: #1f4a44; }
+    .gap-badge.out { background: #f3f4f6; color: #6b7280; }
+    .rank { font-size: 12px; color: var(--muted); margin-right: 8px; font-weight: 700; }
+
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
+
+    /* 右侧悬浮砍一刀入口 */
+    .kan-fab {
+      position: fixed;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      animation: kanPulse 1.6s ease-in-out infinite;
+    }
+    .kan-fab-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff4d4f, #f76b6b);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 24px;
+      box-shadow: 0 6px 18px rgba(255, 77, 79, 0.35);
+    }
+    .kan-fab-label {
+      background: #fff;
+      color: #ff4d4f;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      white-space: nowrap;
+    }
+    @keyframes kanPulse {
+      0%, 100% { transform: translateY(-50%) scale(1); }
+      50% { transform: translateY(-50%) scale(1.05); }
+    }
+
+    /* 砍价弹窗 */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(16, 35, 61, 0.45);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-panel {
+      width: 100%;
+      max-width: 560px;
+      background: var(--card);
+      border-radius: 24px 24px 0 0;
+      padding: 24px;
+      animation: slideUp 0.3s ease;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .modal-title { font-size: 18px; font-weight: 800; margin: 0 0 4px; }
+    .modal-sub { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+    .close-btn {
+      position: absolute;
+      right: 16px;
+      top: 16px;
+      width: 32px; height: 32px;
+      border: none; background: #f3f4f6; border-radius: 50%;
+      font-size: 18px; cursor: pointer;
+    }
+    /* share.js 会覆盖这里的样式 */
+    .ly-share-panel { font-size: 14px; }
+    .ly-share-price { text-align: center; margin-bottom: 18px; }
+    .ly-share-price-label { font-size: 13px; color: var(--muted); }
+    .ly-share-price-value { margin-top: 4px; }
+    .ly-num { font-size: 42px; font-weight: 900; color: var(--primary); }
+    .ly-unit { font-size: 16px; color: var(--muted); }
+    .ly-free { font-size: 40px; font-weight: 900; color: var(--green); }
+    .ly-share-discount { font-size: 13px; color: var(--green); margin-top: 4px; }
+    .ly-share-progress { height: 10px; background: #f3f4f6; border-radius: 999px; overflow: hidden; margin-bottom: 10px; }
+    .ly-share-progress-bar { height: 100%; background: linear-gradient(90deg, var(--primary), #ff8c69); border-radius: 999px; transition: width 0.4s ease; }
+    .ly-share-status { font-size: 13px; color: var(--text); text-align: center; margin-bottom: 18px; }
+    .ly-share-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .ly-share-demo { margin-top: 10px; }
+    .ly-btn {
+      width: 100%; padding: 12px 0; border-radius: 12px; border: none; font-size: 15px; font-weight: 700; cursor: pointer;
+    }
+    .ly-btn-primary { background: #07c160; color: #fff; }
+    .ly-btn-secondary { background: var(--primary-light); color: var(--primary); }
+    .ly-btn-ghost { background: #f3f4f6; color: var(--text); }
+
+    @media (max-width: 400px) {
+      .summary-grid { grid-template-columns: 1fr; }
+      .summary-item { text-align: left; display: flex; justify-content: space-between; align-items: center; }
+      .summary-item .value { margin-top: 0; }
+      .kan-fab { right: 8px; }
+      .kan-fab-icon { width: 48px; height: 48px; font-size: 20px; }
+      .kan-fab-label { font-size: 11px; }
+    }
+    /* 手机端：砍一刀改为底部悬浮，不遮挡学校内容 */
+    @media (max-width: 640px) {
+      .kan-fab {
+        top: auto;
+        bottom: 16px;
+        right: 12px;
+        transform: none;
+        flex-direction: row;
+        animation: kanFloat 1.6s ease-in-out infinite;
+      }
+      @keyframes kanFloat {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <a class="back-link" href="/">← 返回首页</a>
+    <h1>laoyou.love</h1>
+  </header>
+
+  <div class="container">
+    <div class="summary-card">
+      <h2>与你的孩子分数情况相接近的院校推荐</h2>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <div class="label">考生分数</div>
+          <div class="value score" id="display-score">--</div>
+        </div>
+        <div class="summary-item">
+          <div class="label">所在区域</div>
+          <div class="value" id="display-district">--</div>
+        </div>
+        <div class="summary-item">
+          <div class="label">推荐策略</div>
+          <div class="value" id="display-category">--</div>
+        </div>
+      </div>
+      <div class="rule-note">
+        <span class="dot"></span>
+        优先筛选录取均分在考生分数 ±30 分内的学校，按接近度排序
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      <span class="dot"></span>
+      <span>2026 年录取分数为预测 / 参考值，非官方录取线；城六区普高线预估约 460–475 分。实际录取以西安市教育局 7 月 17 日公布为准。</span>
+    </div>
+
+    <div id="school-list" class="school-list">
+      <div class="empty-state">正在加载推荐学校…</div>
+    </div>
+  </div>
+
+  <!-- 右侧常驻悬浮砍一刀入口（手机端底部悬浮） -->
+  <div class="kan-fab" id="kan-fab" aria-label="砍一刀优惠">
+    <div class="kan-fab-icon">🔪</div>
+    <div class="kan-fab-label">砍一刀</div>
+  </div>
+
+  <script src="/share.js"></script>
+  <script>
+    // 区县映射（与首页一致）
+    const DISTRICT_LABEL = {
+      xincheng: "新城区",
+      beilin: "碑林区",
+      lianhu: "莲湖区",
+      yanta: "雁塔区",
+      weiyang: "未央区",
+      bashan: "灞桥区",
+      xixian: "西咸新区",
+      changan: "长安区",
+    };
+    const DATA_DISTRICT = {
+      xincheng: "chengliuqu", yanta: "chengliuqu", beilin: "chengliuqu", lianhu: "chengliuqu",
+      weiyang: "chengliuqu", bashan: "chengliuqu", xixian: "xixian", changan: "changan",
+    };
+    const DISTRICT_ORDER = { chengliuqu: 1, xixian: 2, changan: 3 };
+
+    const params = new URLSearchParams(window.location.search);
+    const scoreParam = params.get("score") || "";
+    const districtParam = params.get("district") || "";
+    const categoryParam = params.get("category") || "平衡推荐";
+
+    // 捕获邀请人编号：好友打开分享链接后，做自己的查分时仍能为邀请人计有效助力
+    if (params.get("ref")) {
+      try { sessionStorage.setItem("ly_ref", params.get("ref")); } catch (e) {}
+    }
+    if (!sessionStorage.getItem("ly_friend_session")) {
+      sessionStorage.setItem("ly_friend_session", "fs-" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36));
+    }
+    const score = Number(scoreParam);
+
+    document.getElementById("display-score").textContent = Number.isFinite(score) ? score + " 分" : "--";
+    document.getElementById("display-district").textContent = DISTRICT_LABEL[districtParam] || districtParam || "--";
+    document.getElementById("display-category").textContent = categoryParam || "--";
+
+    // 筛选算法（与源码 funnel-data.getRecommendedSchools 一致）：
+    // 全局优先 ±30 分，再按接近度排序，固定 15 所；district 仅用于回显覆盖
+    function recommendSchools(schools, score, district) {
+      const scored = schools.map(s => {
+        const years = Object.keys(s.cut).map(Number).sort((a, b) => b - a);
+        const ref = s.cut[String(years[0])] || 0;
+        const gap = Math.round(ref - score);
+        return { ...s, ref, gap, absGap: Math.abs(gap), in30: Math.abs(gap) <= 30 };
+      });
+
+      const preferred = scored.filter(s => s.in30);
+      const remainder = scored.filter(s => !s.in30);
+      return [...preferred, ...remainder]
+        .sort((a, b) => a.absGap - b.absGap || a.name.localeCompare(b.name))
+        .map(s => ({ ...s, district: district || s.district }))
+        .slice(0, 15);
+    }
+
+    function tierLabel(tier) {
+      const map = { "省示范": "省示范", "市示范": "市示范", "普高": "普通高中" };
+      return map[tier] || tier;
+    }
+
+    function renderSchools(schools) {
+      const container = document.getElementById("school-list");
+      if (!Number.isFinite(score)) {
+        container.innerHTML = `<div class="empty-state">请从首页填写分数后查看推荐。</div>`;
+        return;
+      }
+      if (!schools.length) {
+        container.innerHTML = `<div class="empty-state">暂无匹配学校，请检查分数是否输入正确。</div>`;
+        return;
+      }
+      container.innerHTML = schools.map((s, i) => {
+        const gapText = s.gap > 0 ? `+${s.gap}` : `${s.gap}`;
+        const in30 = s.in30;
+        return `
+          <div class="school-card">
+            <div class="school-info">
+              <p class="school-name"><span class="rank">#${i + 1}</span>${s.name}</p>
+              <div class="school-meta">
+                <span>${tierLabel(s.tier)}</span>
+                <span>${s.district === "chengliuqu" ? "城六区" : s.district === "xixian" ? "西咸新区" : "长安区"}</span>
+                <span>招生 ${s.enroll} 人</span>
+              </div>
+            </div>
+            <div class="school-score">
+              <div class="ref-score ${s.gap < 0 ? "negative" : ""}">${s.ref}</div>
+              <div class="gap-badge ${in30 ? "in" : "out"}">${in30 ? "差 " + gapText : "参考分"}</div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    // 加载数据并渲染
+    fetch("/data/schools.json")
+      .then(r => r.json())
+      .then(data => {
+        const list = recommendSchools(data, score, districtParam);
+        renderSchools(list);
+      })
+      .catch(() => {
+        document.getElementById("school-list").innerHTML = `<div class="empty-state">学校数据加载失败，请刷新页面重试。</div>`;
+      });
+
+    // 砍一刀：点击进入分享页，并带入当前结果参数
+    const fab = document.getElementById("kan-fab");
+    const shareParams = new URLSearchParams();
+    if (scoreParam) shareParams.set("score", scoreParam);
+    if (districtParam) shareParams.set("district", districtParam);
+    shareParams.set("category", categoryParam);
+    fab.addEventListener("click", () => {
+      window.location.href = "/share.html?" + shareParams.toString();
+    });
+  </script>
+</body>
+</html>

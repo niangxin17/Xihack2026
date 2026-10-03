@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>分享同学，拿抵扣券 · 西安中考志愿</title>
+  <style>
+    :root {
+      --bg: #f7f3ec;
+      --card: #ffffff;
+      --text: #10233d;
+      --muted: #6b7280;
+      --primary: #b94f38;
+      --primary-dark: #B85C38;
+      --primary-light: #fff7f2;
+      --green: #059669;
+      --navy: #10233d;
+      --gold: #f3c766;
+      --border: #ede8e0;
+      --radius: 20px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* 顶栏 */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(247, 243, 236, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .topbar-inner {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 15px;
+    }
+    .brand .logo {
+      width: 30px; height: 30px;
+      display: grid; place-items: center;
+      border-radius: 9px;
+      background: linear-gradient(135deg, var(--primary), #d4a574);
+      color: #fff; font-size: 14px; font-weight: 800;
+    }
+    .back-link {
+      font-size: 14px;
+      color: var(--muted);
+      text-decoration: none;
+      display: flex; align-items: center; gap: 4px;
+    }
+
+    .container {
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 22px 18px 60px;
+    }
+
+    /* 摘要条 */
+    .summary {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      box-shadow: 0 8px 24px rgba(16, 35, 61, 0.06);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+    .summary .tag {
+      flex-shrink: 0;
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--primary), #d4a574);
+      color: #fff;
+      display: grid; place-items: center;
+      font-size: 26px;
+    }
+    .summary .meta { min-width: 0; }
+    .summary .meta .lbl { font-size: 12px; color: var(--muted); }
+    .summary .meta .val { font-size: 16px; font-weight: 800; margin-top: 2px; }
+
+    /* 玩偶 + 气泡 */
+    .mascot-wrap {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+    .mascot-close {
+      position: absolute;
+      right: 0; top: 0;
+      width: 26px; height: 26px;
+      border: none; border-radius: 50%;
+      background: #fff; color: #9ca3af;
+      font-size: 16px; cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,.08);
+    }
+    .bubble {
+      position: relative;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 8px 14px;
+      margin-bottom: 10px;
+      font-size: 14px; font-weight: 700; color: var(--primary);
+      box-shadow: 0 4px 12px rgba(0,0,0,.06);
+      animation: bubbleIn .3s ease;
+    }
+    .bubble::after {
+      content: "";
+      position: absolute;
+      left: 50%; bottom: -7px;
+      width: 14px; height: 14px;
+      background: #fff;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      transform: translateX(-50%) rotate(45deg);
+    }
+    .mascot {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), #d4a574);
+      display: grid; place-items: center;
+      font-size: 38px;
+      box-shadow: 0 10px 24px rgba(184, 145, 80, .35);
+      animation: bob 1.8s ease-in-out infinite;
+    }
+    @keyframes bubbleIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+
+    /* 主卡片 */
+    .panel-card {
+      background: var(--card);
+      border-radius: 24px;
+      padding: 24px 22px;
+      box-shadow: 0 18px 50px rgba(16, 35, 61, 0.08);
+    }
+    .panel-card h1 {
+      font-size: 22px;
+      font-weight: 900;
+      margin: 0 0 4px;
+      text-align: center;
+    }
+    .panel-card .sub {
+      font-size: 13px;
+      color: var(--muted);
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    /* ShareHelper 渲染区 */
+    .ly-share-panel { font-size: 14px; }
+    .ly-share-price { text-align: center; margin-bottom: 16px; }
+    .ly-original-price {
+      font-size: 13px;
+      color: var(--muted);
+      text-align: center;
+      margin-bottom: 4px;
+    }
+    .ly-original-price s { text-decoration: line-through; opacity: .7; }
+    .ly-share-price-label { font-size: 13px; color: var(--muted); }
+    .ly-share-price-value { margin-top: 4px; }
+    .ly-num { font-size: 44px; font-weight: 900; color: var(--primary); }
+    .ly-unit { font-size: 16px; color: var(--muted); }
+    .ly-free { font-size: 42px; font-weight: 900; color: var(--green); }
+    .ly-share-discount { font-size: 13px; color: var(--green); margin-top: 8px; font-weight: 700; }
+    .ly-tier-badges {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .ly-tier-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-width: 86px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border);
+      background: #fafafa;
+      color: var(--text);
+      font-weight: 800;
+      transition: all .2s ease;
+    }
+    .ly-tier-badge.active {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      color: var(--primary);
+      box-shadow: 0 4px 12px rgba(185, 79, 56, .12);
+    }
+    .ly-tier-price { font-size: 18px; }
+    .ly-tier-unit { font-size: 11px; margin-left: 1px; font-weight: 600; }
+    .ly-tier-note { font-size: 11px; color: var(--muted); margin-top: 2px; font-weight: 500; }
+    .ly-tier-badge.active .ly-tier-note { color: var(--primary); }
+    .ly-share-progress {
+      height: 10px; background: #f3f4f6; border-radius: 999px;
+      overflow: hidden; margin-bottom: 10px;
+    }
+    .ly-share-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), #ff8c69);
+      border-radius: 999px; transition: width .4s ease;
+    }
+    .ly-share-status { font-size: 13px; color: var(--text); text-align: center; margin-bottom: 18px; }
+    .ly-share-status b { color: var(--primary); }
+    .ly-share-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .ly-share-demo { margin-top: 10px; }
+    .ly-btn {
+      width: 100%; padding: 13px 0; border-radius: 12px; border: none;
+      font-size: 15px; font-weight: 700; cursor: pointer;
+    }
+    .ly-btn-primary { background: var(--primary-dark); color: #fff; }
+    .ly-btn-primary:active { transform: scale(.98); }
+    .ly-btn-secondary { background: var(--primary-light); color: var(--primary); }
+    .ly-btn-ghost { background: #f3f4f6; color: var(--text); }
+
+    /* 底部 CTA */
+    .cta {
+      display: block;
+      margin-top: 22px;
+      text-align: center;
+      text-decoration: none;
+      background: var(--navy);
+      color: #fff;
+      font-weight: 800;
+      font-size: 15px;
+      padding: 15px 0;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(16, 35, 61, .18);
+    }
+    .cta:active { transform: scale(.99); }
+    .note {
+      margin-top: 16px;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.7;
+    }
+
+    /* 微信分享引导遮罩 */
+    .wechat-hint {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(16, 35, 61, .82);
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 60px;
+      animation: fadeIn .2s ease;
+    }
+    .wechat-hint.show { display: flex; }
+    .wechat-hint-inner {
+      background: #fff;
+      border-radius: 18px;
+      padding: 22px 28px;
+      text-align: center;
+      max-width: 300px;
+      margin: 0 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.25);
+      animation: slideDown .25s ease;
+    }
+    .wechat-hint-arrow {
+      font-size: 42px;
+      color: var(--primary);
+      line-height: 1;
+      transform: rotate(45deg);
+    }
+    .wechat-hint-title {
+      font-size: 18px;
+      font-weight: 900;
+      margin-top: 8px;
+      color: var(--text);
+    }
+    .wechat-hint-inner p {
+      font-size: 14px;
+      color: var(--muted);
+      margin: 8px 0 0;
+      line-height: 1.6;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: none; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="/">
+        <span class="logo">西</span>
+        <span>西安中考志愿平台</span>
+      </a>
+      <a class="back-link" href="/">← 返回首页</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- 摘要：回显分数 / 区县 / 策略 -->
+    <div class="summary">
+      <div class="tag">🎯</div>
+      <div class="meta">
+        <div class="lbl">你在为这份志愿方案砍价</div>
+        <div class="val" id="summary-val">--</div>
+      </div>
+    </div>
+
+    <!-- 玩偶 + 气泡 -->
+    <div class="mascot-wrap" id="mascot-wrap">
+      <button class="mascot-close" id="mascot-close" aria-label="关闭">×</button>
+      <div class="bubble">分享同学，拿抵扣券。</div>
+      <div class="mascot">🧸</div>
+    </div>
+
+    <!-- 砍价主卡片 -->
+    <div class="panel-card">
+      <h1>邀请同学，砍到免费</h1>
+      <p class="sub">原价 ¥599 的完整冲稳保方案，邀好友助力即可抵扣</p>
+      <div id="share-panel"></div>
+    </div>
+
+    <!-- 微信分享引导遮罩 -->
+    <div class="wechat-hint" id="wechat-hint" onclick="hideWechatHint()">
+      <div class="wechat-hint-inner">
+        <div class="wechat-hint-arrow">↗</div>
+        <div class="wechat-hint-title">分享内容已准备好</div>
+        <p>请点击微信右上角「···」<br/>选择「发送给朋友」或「分享到朋友圈」</p>
+      </div>
+    </div>
+
+    <!-- 底部 CTA：查看自己的院校推荐 -->
+    <a class="cta" id="cta-result" href="/result.html">查看我的院校推荐 →</a>
+
+    <p class="note">
+      分享链接给同学，对方完成查分即算一次有效助力。<br/>
+      结果仅供志愿规划参考，最终以官方一分一段表为准。
+    </p>
+  </div>
+
+  <!-- 微信 JS-SDK（仅在需要微信分享的页面引入；不在服务端执行 wx.config） -->
+  <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+  <script src="/share.js"></script>
+  <script>
+    // 区县映射（与首页一致）
+    const DISTRICT_LABEL = {
+      xincheng: "新城区", beilin: "碑林区", lianhu: "莲湖区", yanta: "雁塔区",
+      weiyang: "未央区", bashan: "灞桥区", xixian: "西咸新区", changan: "长安区",
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const scoreParam = params.get("score") || "";
+    const districtParam = params.get("district") || "";
+    const categoryParam = params.get("category") || "平衡推荐";
+    const score = Number(scoreParam);
+
+    // 摘要回显
+    const parts = [];
+    if (Number.isFinite(score) && scoreParam !== "") parts.push(score + " 分");
+    parts.push(DISTRICT_LABEL[districtParam] || districtParam || "未填区县");
+    parts.push(categoryParam);
+    document.getElementById("summary-val").textContent = parts.join(" · ");
+
+    // 底部 CTA 带入参数，跳转到院校推荐页
+    const resultParams = new URLSearchParams();
+    if (scoreParam) resultParams.set("score", scoreParam);
+    if (districtParam) resultParams.set("district", districtParam);
+    resultParams.set("category", categoryParam);
+    document.getElementById("cta-result").href = "/result.html?" + resultParams.toString();
+
+    // 玩偶可关闭一次（本次访问）
+    const maskKey = "ly_mascot_closed";
+    const mascotWrap = document.getElementById("mascot-wrap");
+    if (sessionStorage.getItem(maskKey) === "1") {
+      mascotWrap.style.display = "none";
+    }
+    document.getElementById("mascot-close").addEventListener("click", function () {
+      mascotWrap.style.display = "none";
+      try { sessionStorage.setItem(maskKey, "1"); } catch (e) {}
+    });
+
+    // 初始化 ShareHelper 并渲染到 #share-panel（apiBase 指向后端 /api）
+    function initShare() {
+      if (typeof ShareHelper === "undefined") {
+        setTimeout(initShare, 120);
+        return;
+      }
+      const helper = new ShareHelper({
+        container: "#share-panel",
+        apiBase: "/api",
+        score: scoreParam,
+        district: districtParam,
+        category: categoryParam,
+      });
+      helper.render("#share-panel");
+    }
+    initShare();
+
+    // 微信分享引导遮罩
+    function showWechatHint() {
+      const el = document.getElementById("wechat-hint");
+      if (el) el.classList.add("show");
+    }
+    function hideWechatHint() {
+      const el = document.getElementById("wechat-hint");
+      if (el) el.classList.remove("show");
+    }
+  </script>
+</body>
+</html>
