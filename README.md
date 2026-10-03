@@ -1,4 +1,4 @@
-# vinext-starter
+# 西安升学 AI 助手?西安本土化升学智能平台 - 菜鸟组合
 
 A clean full-stack starter running on
 [vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
@@ -42,7 +42,7 @@ SIWC-authenticated workspace sites may also receive
 
 Treat the full name as optional and fall back to email when it is absent:
 
-```tsx
+```
 import { headers } from "next/headers";
 
 export default async function Home() {
@@ -68,13 +68,13 @@ optional or required ChatGPT sign-in:
 
 - Use `getChatGPTUser()` for optional signed-in UI.
 - Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
+anonymous visitors through Sign in with ChatGPT.
 - Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
+browser links or actions.
 - Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
+or sign-out. The helper validates and safely encodes it.
 - Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
+they depend on per-request identity headers.
 
 Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
 OAuth cookies, and identity header injection. Do not implement app routes for
@@ -105,4 +105,4 @@ The timeout defaults can be overridden for a controlled canary with `SITES_INSTA
 ## Learn More
 
 - [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+- https://orm.drizzle.team/docs/get-started/d1-new
